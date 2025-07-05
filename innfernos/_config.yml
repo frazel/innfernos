@@ -1,0 +1,16 @@
+title: INNFERNOS
+description: 🔥 The Masterplan
+theme: just-the-docs
+color_scheme: dark
+
+# Build settings
+markdown: kramdown
+remote_theme: just-the-docs/just-the-docs
+baseurl: "" # leave blank for GitHub Pages root
+url: "https://frazel.github.io/innfernos"
+
+nav:
+  - title: Home
+    url: /
+  - title: Roadmap
+    url: /roadmap
