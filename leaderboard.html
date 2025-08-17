@@ -2,34 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Innfernos Leaderboard</title>
+  <title>INNFERNOS | Leaderboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; color: #111; }
-    h1 { font-size: 1.4rem; margin: 0 0 12px; }
+    :root {
+      --bg: #111;
+      --text: #f5f5f5;
+      --muted: #bdbdbd;
+      --accent: #ff5733;
+      --link: #ffa500;
+      --nav: #0ff;
+      --row: #1a1a1a;
+      --row-alt: #161616;
+      --border: #2a2a2a;
+      --hover: #202020;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0; padding: 2rem;
+    }
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 { font-size: 1.6rem; margin: 0 0 10px; color: var(--accent); }
+
+    nav { margin: 0 0 1.5rem; }
+    nav a { margin-right: 1rem; color: var(--nav); font-weight: 700; }
+    nav a:hover { text-decoration: underline; }
+
     .toolbar { margin: 12px 0 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    button { padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; background: #fff; cursor: pointer; }
-    button:hover { background: #f5f5f5; }
+    button {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+      background: #181818; color: var(--text); cursor: pointer;
+    }
+    button:hover { background: var(--hover); }
     button:disabled { opacity: .6; cursor: not-allowed; }
+
     #statusWrap { display: inline-flex; align-items: center; gap: 8px; }
-    #status { font-size: 0.95rem; opacity: 0.85; }
-    #lastUpdated { margin-left: auto; font-size: 0.9rem; opacity: 0.8; }
+    #status { font-size: 0.95rem; color: var(--muted); }
+    #lastUpdated { margin-left: auto; font-size: 0.9rem; color: var(--muted); }
+
     .spinner {
-      width: 16px; height: 16px; border: 2px solid #bbb; border-top-color: #222;
+      width: 16px; height: 16px; border: 2px solid #666; border-top-color: #fff;
       border-radius: 50%; animation: spin 0.9s linear infinite; display: none;
     }
     .loading .spinner { display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    table { border-collapse: collapse; width: 100%; max-width: 900px; }
-    thead th { text-align: left; font-weight: 700; border-bottom: 2px solid #ddd; padding: 10px 8px; }
-    tbody td { border-bottom: 1px solid #eee; padding: 8px; }
-    tbody tr:hover { background: #fafafa; }
+    table { border-collapse: collapse; width: 100%; max-width: 900px; background: #131313; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    thead th {
+      text-align: left; font-weight: 700; padding: 12px 10px;
+      background: #151515; border-bottom: 1px solid var(--border);
+    }
+    tbody td { padding: 10px; border-bottom: 1px solid var(--border); }
+    tbody tr:nth-child(odd) { background: var(--row); }
+    tbody tr:nth-child(even) { background: var(--row-alt); }
+    tbody tr:hover { background: var(--hover); }
     .num { text-align: right; }
-    .muted { color: #666; }
+    .muted { color: var(--muted); }
   </style>
 </head>
 <body>
+  <nav>
+    <a href="index.html">Roadmap</a>
+    <a href="leaderboard.html">Leaderboard</a>
+  </nav>
+
   <h1>Innfernos Top Holders</h1>
 
   <div class="toolbar" id="lb-controls">
@@ -56,11 +96,11 @@
   </table>
 
   <script>
-  // config
+  // === Config ===
   const templateId = '895730';
   const collection = 'inn';
 
-  // atomicassets mirrors to try in order
+  // AtomicAssets mirrors to try in order
   const endpoints = [
     'https://atomicassets.ledgerwise.io/atomicassets/v1',
     'https://aa.dapplica.io/atomicassets/v1',
@@ -70,11 +110,11 @@
     'https://wax.api.atomicassets.io/atomicassets/v1'
   ];
 
-  const PAGE_LIMIT = 1000;   // big pages to reduce roundtrips
+  const PAGE_LIMIT = 1000;   // large pages to reduce roundtrips
   const MAX_PAGES  = 100;    // safety cap
   let csvData = null;
 
-  // dom helpers
+  // === DOM helpers ===
   const els = {
     tbody:       () => document.querySelector('#leaderboard tbody'),
     refreshBtn:  () => document.getElementById('refreshBtn'),
@@ -105,6 +145,7 @@
     el.textContent = `Last updated: ${ts}`;
   }
 
+  // === Fetching ===
   async function fetchJsonWithTimeout(url, timeoutMs = 25000) {
     const ctl = new AbortController();
     const t = setTimeout(() => ctl.abort(), timeoutMs);
@@ -162,6 +203,7 @@
     return owners;
   }
 
+  // === Render ===
   function renderLeaderboard(countMap) {
     const sorted = Object.entries(countMap)
       .sort((a, b) => b[1] - a[1])
@@ -173,7 +215,7 @@
 
     if (sorted.length === 0) {
       const row = document.createElement('tr');
-      row.innerHTML = `<td colspan="3">No assets found for template ${templateId}.</td>`;
+      row.innerHTML = `<td colspan="3" class="muted">No assets found for template ${templateId}.</td>`;
       tbody.appendChild(row);
       csvData = null;
       return;
@@ -191,6 +233,7 @@
     csvData = sorted;
   }
 
+  // === Orchestration ===
   async function fetchTopHolders() {
     const btn = els.refreshBtn();
     try {
@@ -210,7 +253,7 @@
       const tbody = els.tbody();
       if (tbody && !tbody.children.length) {
         const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="3">Error fetching data.</td>`;
+        row.innerHTML = `<td colspan="3" class="muted">Error fetching data.</td>`;
         tbody.appendChild(row);
       }
     } finally {
@@ -234,7 +277,7 @@
     URL.revokeObjectURL(url);
   }
 
-  // wire up and go
+  // Wire up
   document.addEventListener('DOMContentLoaded', () => {
     const r = els.refreshBtn();
     if (r) r.addEventListener('click', fetchTopHolders);
