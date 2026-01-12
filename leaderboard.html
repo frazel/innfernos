@@ -16,275 +16,428 @@
       --row-alt: #161616;
       --border: #2a2a2a;
       --hover: #202020;
+      --panel: #131313;
+      --head: #151515;
     }
     * { box-sizing: border-box; }
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      margin: 0; padding: 2rem;
+      margin: 0;
+      padding: 2rem;
+      line-height: 1.45;
     }
     a { color: var(--link); text-decoration: none; }
     a:hover { text-decoration: underline; }
     h1 { font-size: 1.6rem; margin: 0 0 10px; color: var(--accent); }
 
     nav { margin: 0 0 1.5rem; }
-    nav a { margin-right: 1rem; color: var(--nav); font-weight: 700; }
+    nav a { margin-right: 1rem; color: var(--nav); font-weight: 800; }
     nav a:hover { text-decoration: underline; }
 
-    .toolbar { margin: 12px 0 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    button {
-      padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
-      background: #181818; color: var(--text); cursor: pointer;
+    .wrap { max-width: 980px; margin: 0 auto; }
+
+    .toolbar {
+      margin: 12px 0 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
     }
+
+    button, select, input {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #181818;
+      color: var(--text);
+      outline: none;
+    }
+    button { cursor: pointer; font-weight: 700; }
     button:hover { background: var(--hover); }
     button:disabled { opacity: .6; cursor: not-allowed; }
+
+    select, input { font-weight: 600; }
+    input::placeholder { color: #8b8b8b; }
 
     #statusWrap { display: inline-flex; align-items: center; gap: 8px; }
     #status { font-size: 0.95rem; color: var(--muted); }
     #lastUpdated { margin-left: auto; font-size: 0.9rem; color: var(--muted); }
 
     .spinner {
-      width: 16px; height: 16px; border: 2px solid #666; border-top-color: #fff;
-      border-radius: 50%; animation: spin 0.9s linear infinite; display: none;
+      width: 16px; height: 16px;
+      border: 2px solid #666;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      display: none;
     }
     .loading .spinner { display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    table { border-collapse: collapse; width: 100%; max-width: 900px; background: #131313; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 980px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
     thead th {
-      text-align: left; font-weight: 700; padding: 12px 10px;
-      background: #151515; border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-weight: 800;
+      padding: 12px 10px;
+      background: var(--head);
+      border-bottom: 1px solid var(--border);
     }
     tbody td { padding: 10px; border-bottom: 1px solid var(--border); }
     tbody tr:nth-child(odd) { background: var(--row); }
     tbody tr:nth-child(even) { background: var(--row-alt); }
     tbody tr:hover { background: var(--hover); }
+
     .num { text-align: right; }
     .muted { color: var(--muted); }
+    .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(245,245,245,0.9);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
-  <nav>
-    <a href="index.html">Roadmap</a>
-    <a href="leaderboard.html">Leaderboard</a>
-  </nav>
+  <div class="wrap">
+    <nav>
+      <a href="./index.html">Roadmap</a>
+      <a href="./leaderboard.html">Leaderboard</a>
+    </nav>
 
-  <h1>Innfernos Top Holders</h1>
+    <h1>Innfernos Top Holders</h1>
+    <div class="muted" style="margin-bottom: 10px;">
+      Collection: <span class="pill" id="pillCollection"></span>
+      Template: <span class="pill" id="pillTemplate"></span>
+    </div>
 
-  <div class="toolbar" id="lb-controls">
-    <button id="refreshBtn">Refresh</button>
-    <button id="csvBtn">Download CSV</button>
-    <span id="statusWrap">
-      <span class="spinner" id="spinner" aria-hidden="true"></span>
-      <span id="status">Loading…</span>
-    </span>
-    <span id="lastUpdated"></span>
+    <div class="toolbar" id="lb-controls">
+      <button id="refreshBtn">Refresh</button>
+      <button id="csvBtn" disabled>Download CSV</button>
+
+      <label class="muted" style="display:flex; align-items:center; gap:8px;">
+        Show
+        <select id="showCount">
+          <option value="25">Top 25</option>
+          <option value="50">Top 50</option>
+          <option value="100" selected>Top 100</option>
+        </select>
+      </label>
+
+      <input id="searchWallet" type="text" placeholder="Search wallet…" />
+
+      <span id="statusWrap">
+        <span class="spinner" id="spinner" aria-hidden="true"></span>
+        <span id="status">Loading…</span>
+      </span>
+
+      <span id="lastUpdated"></span>
+    </div>
+
+    <table id="leaderboard">
+      <thead>
+        <tr>
+          <th style="width: 80px;">Rank</th>
+          <th>Wallet</th>
+          <th class="num" style="width: 180px;">Innfernos Held</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="3" class="muted">Loading…</td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <table id="leaderboard">
-    <thead>
-      <tr>
-        <th style="width: 80px;">Rank</th>
-        <th>Wallet</th>
-        <th class="num" style="width: 160px;">Innfernos Held</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td colspan="3" class="muted">Loading…</td></tr>
-    </tbody>
-  </table>
-
   <script>
-  // === Config ===
-  const templateId = '895730';
-  const collection = 'inn';
+    // ==========================
+    // EASY DROP-IN CONFIG
+    // ==========================
+    const CONFIG = {
+      collection: "inn",        // <-- your collection name
+      templateId: "895730",     // <-- template id for the Innfernos NFT
+      topDefault: 100,
+      // accounts endpoint returns holders counts already aggregated (fast)
+      endpoints: [
+        "https://atomicassets.ledgerwise.io/atomicassets/v1",
+        "https://wax.api.atomicassets.io/atomicassets/v1",
+        "https://aa.dapplica.io/atomicassets/v1",
+        "https://aa.wax.blacklusion.io/atomicassets/v1",
+        "https://api-wax-aa.eosarabia.net/atomicassets/v1",
+        "https://wax-aa.eu.eosamsterdam.net/atomicassets/v1",
+      ],
+      // common bot/contract wallets you may want excluded
+      blacklist: [
+        "waxdaofarmer", "waxdaomarket", "wombatmaster", "nfthivepacks",
+        "blend.nefty", "swap.taco", "scurvybot.gm", "swap.alcor",
+        "neftyblocksp", "neftyblocksd", "wallet.taco", "waxportalbot",
+        "dig.sb"
+      ],
+      pageLimit: 1000,
+      maxPages: 25,
+      timeoutMs: 25000
+    };
 
-  // AtomicAssets mirrors to try in order
-  const endpoints = [
-    'https://atomicassets.ledgerwise.io/atomicassets/v1',
-    'https://aa.dapplica.io/atomicassets/v1',
-    'https://aa.wax.blacklusion.io/atomicassets/v1',
-    'https://api-wax-aa.eosarabia.net/atomicassets/v1',
-    'https://wax-aa.eu.eosamsterdam.net/atomicassets/v1',
-    'https://wax.api.atomicassets.io/atomicassets/v1'
-  ];
+    // ==========================
+    // STATE
+    // ==========================
+    let rawRows = [];   // {account, assets, collections?}
+    let csvRows = null; // [ [wallet, count], ... ]
+    let activeEndpoint = null;
 
-  const PAGE_LIMIT = 1000;   // large pages to reduce roundtrips
-  const MAX_PAGES  = 100;    // safety cap
-  let csvData = null;
+    // ==========================
+    // DOM
+    // ==========================
+    const els = {
+      tbody: () => document.querySelector("#leaderboard tbody"),
+      refreshBtn: () => document.getElementById("refreshBtn"),
+      csvBtn: () => document.getElementById("csvBtn"),
+      status: () => document.getElementById("status"),
+      spinner: () => document.getElementById("spinner"),
+      lastUpdated: () => document.getElementById("lastUpdated"),
+      controls: () => document.getElementById("lb-controls"),
+      showCount: () => document.getElementById("showCount"),
+      searchWallet: () => document.getElementById("searchWallet"),
+      pillCollection: () => document.getElementById("pillCollection"),
+      pillTemplate: () => document.getElementById("pillTemplate"),
+    };
 
-  // === DOM helpers ===
-  const els = {
-    tbody:       () => document.querySelector('#leaderboard tbody'),
-    refreshBtn:  () => document.getElementById('refreshBtn'),
-    csvBtn:      () => document.getElementById('csvBtn'),
-    status:      () => document.getElementById('status'),
-    spinner:     () => document.getElementById('spinner'),
-    lastUpdated: () => document.getElementById('lastUpdated'),
-    controls:    () => document.getElementById('lb-controls'),
-  };
+    function setStatus(text) {
+      const s = els.status(); if (s) s.textContent = text || "";
+    }
+    function setLoading(on) {
+      const wrap = els.controls();
+      const sp = els.spinner();
+      if (wrap) wrap.classList.toggle("loading", !!on);
+      if (sp) sp.style.display = on ? "inline-block" : "none";
+    }
+    function setLastUpdated(date) {
+      const el = els.lastUpdated();
+      if (!el) return;
+      if (!date) { el.textContent = ""; return; }
+      const ts = date.toLocaleString(undefined, {
+        year:"numeric", month:"short", day:"2-digit",
+        hour:"2-digit", minute:"2-digit", second:"2-digit"
+      });
+      el.textContent = `Last updated: ${ts}`;
+    }
 
-  function setStatus(text) {
-    const s = els.status(); if (s) s.textContent = text || '';
-  }
-  function setLoading(on) {
-    const wrap = els.controls();
-    const sp = els.spinner();
-    if (wrap) wrap.classList.toggle('loading', !!on);
-    if (sp) sp.style.display = on ? 'inline-block' : 'none';
-  }
-  function setLastUpdated(date) {
-    const el = els.lastUpdated();
-    if (!el) return;
-    if (!date) { el.textContent = ''; return; }
-    const ts = date.toLocaleString(undefined, {
-      year:'numeric', month:'short', day:'2-digit',
-      hour:'2-digit', minute:'2-digit', second:'2-digit'
-    });
-    el.textContent = `Last updated: ${ts}`;
-  }
-
-  // === Fetching ===
-  async function fetchJsonWithTimeout(url, timeoutMs = 25000) {
-    const ctl = new AbortController();
-    const t = setTimeout(() => ctl.abort(), timeoutMs);
-    const res = await fetch(url, { signal: ctl.signal, cache: 'no-store' });
-    clearTimeout(t);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-  }
-
-  async function tryAssetsQuery(page, limit, endpoint) {
-    const qs = new URLSearchParams({
-      collection_name: collection,
-      template_id: templateId,
-      page: String(page),
-      limit: String(limit),
-      order: 'asc',
-      sort: 'asset_id'
-    }).toString();
-    const url = `${endpoint}/assets?${qs}`;
-    return fetchJsonWithTimeout(url, 30000);
-  }
-
-  async function fetchAllAssetsWithFallback() {
-    let workingBase = null;
-    let firstPageData = null;
-
-    for (const base of endpoints) {
+    // ==========================
+    // FETCH
+    // ==========================
+    async function fetchJsonWithTimeout(url, timeoutMs) {
+      const ctl = new AbortController();
+      const t = setTimeout(() => ctl.abort(), timeoutMs);
       try {
-        setStatus(`Checking ${new URL(base).host}…`);
-        firstPageData = await tryAssetsQuery(1, PAGE_LIMIT, base);
-        workingBase = base;
-        setStatus(`Using ${new URL(base).host}`);
-        break;
-      } catch (e) {
-        console.warn('Endpoint failed, trying next:', base, e?.message || e);
+        const res = await fetch(url, { signal: ctl.signal, cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } finally {
+        clearTimeout(t);
       }
     }
-    if (!workingBase) throw new Error('All AtomicAssets endpoints failed.');
 
-    const owners = {};
-    let page = 1;
+    function buildAccountsUrl(base, page) {
+      const qs = new URLSearchParams({
+        collection_name: CONFIG.collection,
+        template_id: CONFIG.templateId,
+        page: String(page),
+        limit: String(CONFIG.pageLimit),
+        order: "desc",
+        sort: "assets"
+      }).toString();
+      return `${base}/accounts?${qs}`;
+    }
 
-    while (page <= MAX_PAGES) {
-      const data = page === 1 ? firstPageData : await tryAssetsQuery(page, PAGE_LIMIT, workingBase);
-      const assets = data?.data || [];
-      if (assets.length === 0) break;
-
-      for (const a of assets) {
-        const o = a.owner;
-        if (o) owners[o] = (owners[o] || 0) + 1;
+    async function pickWorkingEndpoint() {
+      for (const base of CONFIG.endpoints) {
+        try {
+          setStatus(`Checking ${new URL(base).host}…`);
+          const testUrl = buildAccountsUrl(base, 1);
+          const json = await fetchJsonWithTimeout(testUrl, CONFIG.timeoutMs);
+          if (Array.isArray(json?.data)) {
+            activeEndpoint = base;
+            setStatus(`Using ${new URL(base).host}`);
+            return json; // first page
+          }
+        } catch (e) {
+          console.warn("Endpoint failed:", base, e?.message || e);
+        }
       }
-      if (assets.length < PAGE_LIMIT) break;
-      page++;
-    }
-    return owners;
-  }
-
-  // === Render ===
-  function renderLeaderboard(countMap) {
-    const sorted = Object.entries(countMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 100);
-
-    const tbody = els.tbody();
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    if (sorted.length === 0) {
-      const row = document.createElement('tr');
-      row.innerHTML = `<td colspan="3" class="muted">No assets found for template ${templateId}.</td>`;
-      tbody.appendChild(row);
-      csvData = null;
-      return;
+      throw new Error("All AtomicAssets endpoints failed.");
     }
 
-    sorted.forEach(([wallet, count], i) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${i + 1}</td>
-        <td><a href="https://wax.atomichub.io/explorer/account/${wallet}" target="_blank" rel="noopener">${wallet}</a></td>
-        <td class="num">${count}</td>`;
-      tbody.appendChild(row);
-    });
+    async function fetchAllAccountPages() {
+      const firstPage = await pickWorkingEndpoint();
 
-    csvData = sorted;
-  }
+      const all = [];
+      let page = 1;
 
-  // === Orchestration ===
-  async function fetchTopHolders() {
-    const btn = els.refreshBtn();
-    try {
-      if (btn) { btn.disabled = true; btn.textContent = 'Refreshing…'; }
-      setLoading(true);
-      setStatus('Loading leaderboard…');
-      setLastUpdated(null);
+      while (page <= CONFIG.maxPages) {
+        const json = page === 1
+          ? firstPage
+          : await fetchJsonWithTimeout(buildAccountsUrl(activeEndpoint, page), CONFIG.timeoutMs);
 
-      const counts = await fetchAllAssetsWithFallback();
-      renderLeaderboard(counts);
+        const rows = Array.isArray(json?.data) ? json.data : [];
+        if (!rows.length) break;
 
-      setStatus('Ready');
-      setLastUpdated(new Date());
-    } catch (err) {
-      console.error(err);
-      setStatus('Error loading leaderboard. Click Refresh or hard refresh the page.');
+        all.push(...rows);
+
+        if (rows.length < CONFIG.pageLimit) break;
+        page++;
+      }
+
+      return all;
+    }
+
+    // ==========================
+    // FILTER + RENDER
+    // ==========================
+    function normalizeWallet(w) {
+      return String(w || "").trim().toLowerCase();
+    }
+
+    function getFilteredSortedRows() {
+      const topN = Number(els.showCount()?.value || CONFIG.topDefault);
+      const q = normalizeWallet(els.searchWallet()?.value);
+
+      const filtered = (rawRows || [])
+        .filter(r => r?.account && Number(r.assets) > 0)
+        .filter(r => !CONFIG.blacklist.includes(normalizeWallet(r.account)))
+        .filter(r => !q || normalizeWallet(r.account).includes(q))
+        .sort((a, b) => Number(b.assets) - Number(a.assets))
+        .slice(0, topN);
+
+      return filtered;
+    }
+
+    function render() {
       const tbody = els.tbody();
-      if (tbody && !tbody.children.length) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="3" class="muted">Error fetching data.</td>`;
-        tbody.appendChild(row);
+      if (!tbody) return;
+
+      const rows = getFilteredSortedRows();
+      tbody.innerHTML = "";
+
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="3" class="muted">No holders found (or filtered out).</td>`;
+        tbody.appendChild(tr);
+        els.csvBtn().disabled = true;
+        csvRows = null;
+        return;
       }
-    } finally {
-      setLoading(false);
-      if (btn) { btn.disabled = false; btn.textContent = 'Refresh'; }
+
+      rows.forEach((r, i) => {
+        const wallet = r.account;
+        const count = Number(r.assets) || 0;
+
+        let medal = "";
+        if (i === 0) medal = "👑 ";
+        else if (i === 1) medal = "🥈 ";
+        else if (i === 2) medal = "🥉 ";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${medal}${i + 1}</td>
+          <td><a href="https://wax.atomichub.io/explorer/account/${wallet}" target="_blank" rel="noopener">${wallet}</a></td>
+          <td class="num">${count}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // build CSV data from the currently displayed rows
+      csvRows = rows.map(r => [r.account, Number(r.assets) || 0]);
+      els.csvBtn().disabled = false;
     }
-  }
 
-  function downloadCSV() {
-    if (!csvData) return;
-    let csv = "Rank,Wallet,Innfernos Held\n";
-    csvData.forEach(([wallet, count], i) => {
-      csv += `${i + 1},${wallet},${count}\n`;
+    // ==========================
+    // ACTIONS
+    // ==========================
+    async function loadLeaderboard() {
+      const btn = els.refreshBtn();
+      try {
+        if (btn) { btn.disabled = true; btn.textContent = "Refreshing…"; }
+        els.csvBtn().disabled = true;
+
+        setLoading(true);
+        setLastUpdated(null);
+        setStatus("Loading leaderboard…");
+
+        rawRows = await fetchAllAccountPages();
+
+        setStatus("Ready");
+        setLastUpdated(new Date());
+
+        render();
+      } catch (err) {
+        console.error(err);
+        setStatus("Error loading leaderboard. Click Refresh or hard refresh the page.");
+        const tbody = els.tbody();
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="3" class="muted">❌ ${String(err.message || err)}</td></tr>`;
+        }
+      } finally {
+        setLoading(false);
+        if (btn) { btn.disabled = false; btn.textContent = "Refresh"; }
+      }
+    }
+
+    function downloadCSV() {
+      if (!csvRows || !csvRows.length) return;
+
+      let csv = "Rank,Wallet,Innfernos Held\n";
+      csvRows.forEach(([wallet, count], i) => {
+        csv += `${i + 1},${wallet},${count}\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = Object.assign(document.createElement("a"), {
+        href: url,
+        download: "innfernos_leaderboard.csv"
+      });
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ==========================
+    // INIT
+    // ==========================
+    document.addEventListener("DOMContentLoaded", () => {
+      // show config pills
+      const pc = els.pillCollection(); if (pc) pc.textContent = CONFIG.collection;
+      const pt = els.pillTemplate();   if (pt) pt.textContent = CONFIG.templateId;
+
+      // wire events
+      els.refreshBtn()?.addEventListener("click", loadLeaderboard);
+      els.csvBtn()?.addEventListener("click", downloadCSV);
+      els.showCount()?.addEventListener("change", render);
+      els.searchWallet()?.addEventListener("input", () => {
+        // small debounce feel without timers
+        render();
+      });
+
+      loadLeaderboard();
     });
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement('a'), { href: url, download: 'innfernos_leaderboard.csv' });
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  // Wire up
-  document.addEventListener('DOMContentLoaded', () => {
-    const r = els.refreshBtn();
-    if (r) r.addEventListener('click', fetchTopHolders);
-    const c = els.csvBtn();
-    if (c) c.addEventListener('click', downloadCSV);
-    fetchTopHolders();
-  });
   </script>
 </body>
 </html>
+
